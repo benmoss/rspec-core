@@ -16,6 +16,7 @@ require_rspec['core/flat_map']
 require_rspec['core/filter_manager']
 require_rspec['core/dsl']
 require_rspec['core/deprecation']
+require_rspec['core/warning']
 require_rspec['core/reporter']
 
 require_rspec['core/hooks']
