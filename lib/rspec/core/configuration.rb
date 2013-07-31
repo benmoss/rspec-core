@@ -138,7 +138,7 @@ module RSpec
 
       def pattern= value
         if @spec_files_loaded
-          RSpec.warning "WARNING: Configuring `pattern` to #{value} has no effect since RSpec has already loaded the spec files."
+          RSpec.warning "Configuring `pattern` to #{value} has no effect since RSpec has already loaded the spec files."
         end
         @pattern = value
       end
