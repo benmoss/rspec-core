@@ -127,7 +127,7 @@ EOS
           end
         end
 
-        private
+      private
         def process host, globals, position, scope
           globals[position][scope].each do |hook|
             unless host.parent_groups.any? { |a| a.hooks[position][scope].include? hook }
