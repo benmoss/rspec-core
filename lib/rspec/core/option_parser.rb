@@ -149,10 +149,15 @@ module RSpec::Core
                                          begin
                                            Integer(argument)
                                          rescue ArgumentError
+                                           #Note this is necessary to find an non *ruby* line as well as rspec
+                                           call_site = caller.find { |line|
+                                             line !~ ::RSpec::CallerFilter::LIB_REGEX &&
+                                             line !~ /ruby\/\d\.\d(\.\d)?\/optparse\.rb/
+                                           }
                                            RSpec.warning "Non integer specified as profile count, seperate " +
                                                        "your path from options with -- e.g. " +
                                                        "`rspec --profile -- #{argument}`",
-                                                       :call_site => caller.find { |line| line !~ ::RSpec::CallerFilter::LIB_REGEX && line !~ /ruby\/\d\.\d\.\d\/optparse\.rb/ }
+                                                       :call_site => call_site
                                            true
                                          end
                                        end
