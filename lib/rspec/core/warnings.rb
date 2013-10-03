@@ -4,8 +4,6 @@ module RSpec
   #
   # Used internally to print deprecation warnings
   def self.deprecate(deprecated, data = {})
-    call_site = caller.find { |line| line !~ %r{/lib/rspec/(core|mocks|expectations|matchers|rails)/} }
-
     RSpec.configuration.reporter.deprecation(
       {
         :deprecated => deprecated,
@@ -32,7 +30,7 @@ module RSpec
   #
   # Used internally to longer warnings
   def self.warn_with(message, options = {})
-    call_site = caller.find { |line| line !~ %r{/lib/rspec/(core|mocks|expectations|matchers|rails)/} }
+    call_site = options.fetch :call_site, CallerFilter.first_non_rspec_line
     message << " Called from #{call_site}."
     ::Kernel.warn message
   end
