@@ -118,20 +118,32 @@ EOS
         end
       end
 
-      module RegistersGlobals
-        def register_globals host, globals
-          [:before, :after, :around].each do |position|
-            process host, globals, position, :each
-            next if position == :around # no around(:all) hooks
-            process host, globals, position, :all
-          end
+      class HookCollections
+        def initialize(data)
+          @data = data
+        end
+
+        def [](key)
+          @data[key]
+        end
+
+        def register_globals(host, globals)
+          process(host, globals, :before, :each)
+          process(host, globals, :after,  :each)
+          process(host, globals, :around, :each)
+
+          process(host, globals, :before, :all)
+          process(host, globals, :after,  :all)
         end
 
         private
-        def process host, globals, position, scope
+
+        def process(host, globals, position, scope)
           globals[position][scope].each do |hook|
-            unless host.parent_groups.any? { |a| a.hooks[position][scope].include? hook }
-              self[position][scope] << hook if scope == :each || hook.options_apply?(host)
+            if scope == :each || hook.options_apply?(host)
+              unless host.parent_groups.any? {|a| a.hooks[position][scope].include?(hook)}
+                self[position][scope] << hook
+              end
             end
           end
         end
@@ -139,11 +151,11 @@ EOS
 
       # @private
       def hooks
-        @hooks ||= {
+        @hooks ||= HookCollections.new(
           :around => { :each => AroundHookCollection.new },
           :before => { :each => HookCollection.new, :all => HookCollection.new, :suite => HookCollection.new },
           :after =>  { :each => HookCollection.new, :all => HookCollection.new, :suite => HookCollection.new }
-        }.extend(RegistersGlobals)
+        )
       end
 
       # @api public
