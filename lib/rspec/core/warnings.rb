@@ -28,7 +28,7 @@ module RSpec
 
   # @private
   #
-  # Used internally to longer warnings
+  # Used internally to print longer warnings
   def self.warn_with(message, options = {})
     call_site = options.fetch :call_site, CallerFilter.first_non_rspec_line
     message << " Called from #{call_site}."
