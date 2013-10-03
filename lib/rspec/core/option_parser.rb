@@ -151,7 +151,8 @@ module RSpec::Core
                                          rescue ArgumentError
                                            RSpec.warning "Non integer specified as profile count, seperate " +
                                                        "your path from options with -- e.g. " +
-                                                       "`rspec --profile -- #{argument}`"
+                                                       "`rspec --profile -- #{argument}`",
+                                                       :call_site => caller.find { |line| line !~ ::RSpec::CallerFilter::LIB_REGEX && line !~ /ruby\/\d\.\d\.\d\/optparse\.rb/ }
                                            true
                                          end
                                        end
