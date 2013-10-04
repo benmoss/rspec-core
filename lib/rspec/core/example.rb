@@ -146,7 +146,7 @@ module RSpec
       # Wraps the example block in a Proc so it can invoked using `run` or
       # `call` in [around](../Hooks#around-instance_method) hooks.
       def self.procsy(metadata, &proc)
-        proc.extend(Procsy).with(metadata)
+        Procsy.new(metadata, &proc)
       end
 
       # Used to extend a `Proc` with behavior that makes it look something like
@@ -166,25 +166,24 @@ module RSpec
       #         ex.run         # run delegates to ex.call
       #       end
       #     end
-      module Procsy
+      class Procsy
         # The `metadata` of the {Example} instance.
         attr_reader :metadata
 
-        # @api private
-        # @param [Proc]
-        # Adds a `run` method to the extended Proc, allowing it to be invoked
-        # in an [around](../Hooks#around-instance_method) hook using either
-        # `run` or `call`.
-        def self.extended(proc)
-          # @api public
-          # Foo bar
-          def proc.run; call; end
+        extend Forwardable
+
+        def_delegator :@proc, :call, :call
+        def_delegator :@proc, :call, :run
+
+        def initialize(metadata, &block)
+          @metadata = metadata
+          @proc = block
         end
 
-        # @api private
-        def with(metadata)
-          @metadata = metadata
-          self
+        private
+
+        def to_proc
+          @proc
         end
       end
 
