@@ -143,14 +143,14 @@ module RSpec
 
       # @api private
       #
-      # Wraps the example block in a Proc so it can invoked using `run` or
-      # `call` in [around](../Hooks#around-instance_method) hooks.
+      # Wraps the example block in a Procsy object so it can invoked using
+      # `run` or `call` in [around](../Hooks#around-instance_method) hooks.
       def self.procsy(metadata, &proc)
         Procsy.new(metadata, &proc)
       end
 
-      # Used to extend a `Proc` with behavior that makes it look something like
-      # an {Example} in an {Hooks#around around} hook.
+      # Wraps a `Proc` and exposes a `run` method for use in {Hooks#around
+      # around} hooks.
       #
       # @note Procsy, itself, is not a public API, but we're documenting it
       #   here to document how to interact with the object yielded to an
@@ -159,7 +159,7 @@ module RSpec
       # @example
       #
       #     RSpec.configure do |c|
-      #       c.around do |ex| # ex is a Proc extended with Procsy
+      #       c.around do |ex| # Procsy which wraps the example
       #         if ex.metadata[:key] == :some_value && some_global_condition
       #           raise "some message"
       #         end
