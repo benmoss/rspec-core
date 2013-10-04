@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module RSpec
   module Core
     # Wrapper for an instance of a subclass of {ExampleGroup}. An instance of

@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module RSpec
   module Core
     module Hooks
