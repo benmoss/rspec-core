@@ -59,18 +59,20 @@ EOS
         end
       end
 
-      module HookCollectionAliases
-        def self.included(host)
-          host.send :alias_method, :prepend, :unshift
-          host.send :alias_method, :append,  :push
-        end
-      end
+      class HookCollection
+        extend Forwardable
 
-      class HookCollection < Array
-        include HookCollectionAliases
+        def_delegators :@data, :empty?, :each, :to_ary, :include?, :<<, :shift, :first
+        def_delegator :@data, :push, :append
+        def_delegator :@data, :unshift, :prepend
+
+        def initialize(data=[])
+          @data = data
+        end
 
         def for(example_or_group)
-          self.class.new(select {|hook| hook.options_apply?(example_or_group)}).
+          self.class.
+            new(@data.select {|hook| hook.options_apply?(example_or_group)}).
             with(example_or_group)
         end
 
@@ -80,15 +82,13 @@ EOS
         end
 
         def run
-          each {|h| h.run(@example) } unless empty?
+          @data.each {|h| h.run(@example)}
         end
       end
 
-      class AroundHookCollection < Array
-        include HookCollectionAliases
-
+      class AroundHookCollection < HookCollection
         def for(example, initial_procsy=nil)
-          self.class.new(select {|hook| hook.options_apply?(example)}).
+          self.class.new(@data.select {|hook| hook.options_apply?(example)}).
             with(example, initial_procsy)
         end
 
@@ -99,7 +99,7 @@ EOS
         end
 
         def run
-          inject(@initial_procsy) do |procsy, around_hook|
+          @data.reduce(@initial_procsy) do |procsy, around_hook|
             Example.procsy(procsy.metadata) do
               @example.instance_exec(procsy, &around_hook.block)
             end
@@ -107,14 +107,14 @@ EOS
         end
       end
 
-      class GroupHookCollection < Array
+      class GroupHookCollection < HookCollection
         def for(group)
           @group = group
           self
         end
 
         def run
-          shift.run(@group) until empty?
+          @data.shift.run(@group) until @data.empty?
         end
       end
 
