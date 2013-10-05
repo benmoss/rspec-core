@@ -166,10 +166,13 @@ module RSpec
       #         ex.run         # run delegates to ex.call
       #       end
       #     end
-      class Procsy < Proc
+      class Procsy
         # The `metadata` of the {Example} instance.
         attr_reader :metadata
 
+        Proc.public_instance_methods(false).each do |name|
+          define_method(name) { |*a, &b| @proc.__send__(name, *a, &b) }
+        end
         alias run call
 
         def initialize(metadata, &block)
