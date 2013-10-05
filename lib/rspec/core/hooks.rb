@@ -143,11 +143,9 @@ EOS
 
         def process(host, globals, position, scope)
           globals[position][scope].each do |hook|
-            if scope == :each || hook.options_apply?(host)
-              unless host.parent_groups.any? {|a| a.hooks[position][scope].include?(hook)}
-                self[position][scope] << hook
-              end
-            end
+            next unless scope == :each || hook.options_apply?(host)
+            next if host.parent_groups.any? {|a| a.hooks[position][scope].include?(hook)}
+            self[position][scope] << hook
           end
         end
       end
