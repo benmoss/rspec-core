@@ -141,14 +141,6 @@ module RSpec
         RSpec.current_example = nil
       end
 
-      # @api private
-      #
-      # Wraps the example block in a Procsy object so it can invoked using
-      # `run` or `call` in [around](../Hooks#around-instance_method) hooks.
-      def self.procsy(metadata, &proc)
-        Procsy.new(metadata, &proc)
-      end
-
       # Wraps a `Proc` and exposes a `run` method for use in {Hooks#around
       # around} hooks.
       #
@@ -180,10 +172,9 @@ module RSpec
           @proc = block
         end
 
-        private
-
-        def to_proc
-          @proc
+        # @api private
+        def wrap(&block)
+          self.class.new(metadata, &block)
         end
       end
 
@@ -249,7 +240,7 @@ An error occurred #{context}
         if around_each_hooks.empty?
           yield
         else
-          @example_group_class.run_around_each_hooks(self, Example.procsy(metadata, &block))
+          @example_group_class.run_around_each_hooks(self, Procsy.new(metadata, &block))
         end
       rescue Exception => e
         set_exception(e, "in an around(:each) hook")

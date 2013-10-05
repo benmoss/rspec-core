@@ -103,7 +103,7 @@ EOS
 
         def run
           hooks.reduce(@initial_procsy) do |procsy, around_hook|
-            Example.procsy(procsy.metadata) do
+            procsy.wrap do
               @example.instance_exec(procsy, &around_hook.block)
             end
           end.call
