@@ -1,5 +1,3 @@
-require 'forwardable'
-
 module RSpec
   module Core
     # Wrapper for an instance of a subclass of {ExampleGroup}. An instance of
@@ -172,10 +170,10 @@ module RSpec
         # The `metadata` of the {Example} instance.
         attr_reader :metadata
 
-        extend Forwardable
-
-        def_delegator :@proc, :call, :call
-        def_delegator :@proc, :call, :run
+        Proc.public_instance_methods(false).each do |name|
+          define_method(name) { |*a, &b| @proc.__send__(name, *a, &b) }
+        end
+        alias run call
 
         def initialize(metadata, &block)
           @metadata = metadata

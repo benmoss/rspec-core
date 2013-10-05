@@ -1,5 +1,3 @@
-require 'forwardable'
-
 module RSpec
   module Core
     module Hooks
@@ -62,19 +60,22 @@ EOS
       end
 
       class HookCollection
-        extend Forwardable
+        attr_reader :hooks
+        protected   :hooks
 
-        def_delegators :@data, :empty?, :each, :to_ary, :include?, :<<, :shift, :first
-        def_delegator :@data, :push, :append
-        def_delegator :@data, :unshift, :prepend
+        Array.public_instance_methods(false).each do |name|
+          define_method(name) { |*a, &b| hooks.__send__(name, *a, &b) }
+        end
+        alias append push
+        alias prepend unshift
 
-        def initialize(data=[])
-          @data = data
+        def initialize(hooks=[])
+          @hooks = hooks
         end
 
         def for(example_or_group)
           self.class.
-            new(@data.select {|hook| hook.options_apply?(example_or_group)}).
+            new(hooks.select {|hook| hook.options_apply?(example_or_group)}).
             with(example_or_group)
         end
 
@@ -84,13 +85,13 @@ EOS
         end
 
         def run
-          @data.each {|h| h.run(@example)}
+          hooks.each {|h| h.run(@example)}
         end
       end
 
       class AroundHookCollection < HookCollection
         def for(example, initial_procsy=nil)
-          self.class.new(@data.select {|hook| hook.options_apply?(example)}).
+          self.class.new(hooks.select {|hook| hook.options_apply?(example)}).
             with(example, initial_procsy)
         end
 
@@ -101,7 +102,7 @@ EOS
         end
 
         def run
-          @data.reduce(@initial_procsy) do |procsy, around_hook|
+          hooks.reduce(@initial_procsy) do |procsy, around_hook|
             Example.procsy(procsy.metadata) do
               @example.instance_exec(procsy, &around_hook.block)
             end
@@ -116,7 +117,7 @@ EOS
         end
 
         def run
-          @data.shift.run(@group) until @data.empty?
+          hooks.shift.run(@group) until hooks.empty?
         end
       end
 
